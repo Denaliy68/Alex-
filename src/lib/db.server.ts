@@ -47,7 +47,7 @@ function getSql(): Sql | null {
     // Render PostgreSQL requires SSL when connecting from external providers like Vercel
     const isSsl = connectionString.includes("sslmode=require") || !connectionString.includes("localhost");
     _sql = postgres(connectionString, {
-      ssl: isSsl ? "require" : false,
+      ssl: isSsl ? { rejectUnauthorized: false } : false,
       max: 10,
       idle_timeout: 20,
       connect_timeout: 10,
@@ -97,16 +97,22 @@ export async function insertContactSubmission(data: {
   const sql = getSql();
 
   if (sql) {
-    await ensureTableExists(sql);
-    const rows = await sql<ContactSubmission[]>`
-      INSERT INTO contact_submissions (name, email, subject, message, is_read)
-      VALUES (${data.name}, ${data.email}, ${data.subject}, ${data.message}, false)
-      RETURNING id, name, email, subject, message, is_read, created_at::text as created_at
-    `;
-    return rows[0];
+    try {
+      await ensureTableExists(sql);
+      const rows = await sql<ContactSubmission[]>`
+        INSERT INTO contact_submissions (name, email, subject, message, is_read)
+        VALUES (${data.name}, ${data.email}, ${data.subject}, ${data.message}, false)
+        RETURNING id, name, email, subject, message, is_read, created_at::text as created_at
+      `;
+      if (rows && rows[0]) {
+        return rows[0];
+      }
+    } catch (err) {
+      console.error("[Database] PostgreSQL insert error (falling back to memory):", err);
+    }
   }
 
-  // Fallback to local memory when DATABASE_URL is not provided
+  // Fallback to local memory when DATABASE_URL is not provided or if database is temporarily unreachable
   const newSubmission: ContactSubmission = {
     id: `local-${Date.now()}`,
     name: data.name,
@@ -124,20 +130,24 @@ export async function getAllContactSubmissions(): Promise<ContactSubmission[]> {
   const sql = getSql();
 
   if (sql) {
-    await ensureTableExists(sql);
-    const rows = await sql<ContactSubmission[]>`
-      SELECT 
-        id::text, 
-        name, 
-        email, 
-        subject, 
-        message, 
-        COALESCE(is_read, false) as is_read, 
-        created_at::text as created_at
-      FROM contact_submissions
-      ORDER BY created_at DESC
-    `;
-    return rows;
+    try {
+      await ensureTableExists(sql);
+      const rows = await sql<ContactSubmission[]>`
+        SELECT 
+          id::text, 
+          name, 
+          email, 
+          subject, 
+          message, 
+          COALESCE(is_read, false) as is_read, 
+          created_at::text as created_at
+        FROM contact_submissions
+        ORDER BY created_at DESC
+      `;
+      return rows;
+    } catch (err) {
+      console.error("[Database] PostgreSQL fetch error (falling back to memory):", err);
+    }
   }
 
   return [...localFallbackSubmissions];

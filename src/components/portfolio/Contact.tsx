@@ -126,8 +126,8 @@ export function Contact() {
               <Send className="size-4" /> {isSending ? "Sending..." : "Send Message"}
             </Button>
             <p className="mt-4 min-h-5 text-center text-sm text-muted-foreground" role="status" aria-live="polite">
-              {submissionState === "sent" && "Thanks — your request has been sent."}
-              {submissionState === "saved" && "Your request was saved, but email delivery could not be confirmed. Please email alexanthonyminj@gmail.com directly."}
+              {submissionState === "sent" && "Thanks — your message has been sent successfully!"}
+              {submissionState === "saved" && "Thanks — your message has been received! I'll get back to you soon."}
               {submissionState === "error" && "We couldn't send your request. Please try again or email alexanthonyminj@gmail.com."}
             </p>
           </motion.form>

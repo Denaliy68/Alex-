@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeader, getRequestUrl } from "@tanstack/react-start/server";
+import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 const contactSchema = z.object({
@@ -51,11 +51,25 @@ function sanitizeText(value: string): string {
 export const submitContactRequest = createServerFn({ method: "POST" })
   .validator((input: unknown) => contactSchema.parse(input))
   .handler(async ({ data }) => {
-    // 1. Origin verification
+    // 1. Origin verification (compatible with reverse proxies and cloud hosts like Vercel)
     const origin = getRequestHeader("origin");
-    const requestUrl = getRequestUrl();
-    if (!origin || new URL(origin).origin !== new URL(requestUrl).origin) {
-      throw new Error("This request could not be verified. Please refresh and try again.");
+    const host = getRequestHeader("x-forwarded-host") || getRequestHeader("host");
+    if (origin && host) {
+      try {
+        const originHost = new URL(origin).host.toLowerCase();
+        const serverHost = host.toLowerCase();
+        if (
+          originHost !== serverHost &&
+          !originHost.includes("localhost") &&
+          !originHost.endsWith(".vercel.app")
+        ) {
+          throw new Error("This request could not be verified. Please refresh and try again.");
+        }
+      } catch (err) {
+        if (err instanceof Error && err.message.includes("could not be verified")) {
+          throw err;
+        }
+      }
     }
 
     // 2. Client IP rate limiting
