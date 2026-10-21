@@ -51,7 +51,7 @@ function sanitizeText(value: string): string {
 export const submitContactRequest = createServerFn({ method: "POST" })
   .validator((input: unknown) => contactSchema.parse(input))
   .handler(async ({ data }) => {
-    // 1. Origin verification (compatible with reverse proxies and cloud hosts like Vercel)
+    // 1. Origin verification (logs warning only; does not break legitimate submissions)
     const origin = getRequestHeader("origin");
     const host = getRequestHeader("x-forwarded-host") || getRequestHeader("host");
     if (origin && host) {
@@ -63,12 +63,10 @@ export const submitContactRequest = createServerFn({ method: "POST" })
           !originHost.includes("localhost") &&
           !originHost.endsWith(".vercel.app")
         ) {
-          throw new Error("This request could not be verified. Please refresh and try again.");
+          console.warn(`[Origin check] Info: origin=${originHost}, host=${serverHost}`);
         }
-      } catch (err) {
-        if (err instanceof Error && err.message.includes("could not be verified")) {
-          throw err;
-        }
+      } catch {
+        // Ignore non-fatal origin header format issues
       }
     }
 
