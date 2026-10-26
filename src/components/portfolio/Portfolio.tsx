@@ -3,6 +3,22 @@ import { useState } from "react";
 import { Play } from "lucide-react";
 import { SectionHeader } from "./Section";
 import { TiltCard } from "./TiltCard";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+export type Project = {
+  title: string;
+  sub: string;
+  cat: string;
+  gradient: string;
+  tag: string;
+  videoUrl?: string;
+};
 
 const categories = [
   "All",
@@ -14,17 +30,91 @@ const categories = [
   "Social Media",
 ];
 
-const projects = [
-  { title: "CyberPeace Foundation", sub: "YouTube Content · Awareness", cat: "Video Editing", gradient: "from-[#3B82F6] via-[#6366F1] to-[#8B5CF6]", tag: "Featured" },
-  { title: "Cybersecurity Awareness", sub: "Explainer · Motion Graphics", cat: "Explainer Videos", gradient: "from-[#8B5CF6] via-[#A855F7] to-[#EC4899]", tag: "Series" },
-  { title: "Digicrow Podcast", sub: "Multi-cam · Post-production", cat: "Podcasts", gradient: "from-[#0EA5E9] via-[#3B82F6] to-[#1E40AF]", tag: "Podcast" },
-  { title: "Brand Reels", sub: "Short-form · Social Media", cat: "Reels", gradient: "from-[#F472B6] via-[#8B5CF6] to-[#3B82F6]", tag: "Reels" },
-  { title: "Motion ID Pack", sub: "Logo Animation · Idents", cat: "Motion Graphics", gradient: "from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6]", tag: "Branding" },
-  { title: "Campaign Cuts", sub: "Social Spots · Awareness", cat: "Social Media", gradient: "from-[#F59E0B] via-[#EF4444] to-[#8B5CF6]", tag: "Campaign" },
+export const projects: Project[] = [
+  {
+    title: "CyberPeace Foundation",
+    sub: "YouTube Content · Awareness",
+    cat: "Video Editing",
+    gradient: "from-[#3B82F6] via-[#6366F1] to-[#8B5CF6]",
+    tag: "Featured",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your YouTube, Vimeo, or MP4 URL
+  },
+  {
+    title: "Cybersecurity Awareness",
+    sub: "Explainer · Motion Graphics",
+    cat: "Explainer Videos",
+    gradient: "from-[#8B5CF6] via-[#A855F7] to-[#EC4899]",
+    tag: "Series",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your video URL
+  },
+  {
+    title: "Digicrow Podcast",
+    sub: "Multi-cam · Post-production",
+    cat: "Podcasts",
+    gradient: "from-[#0EA5E9] via-[#3B82F6] to-[#1E40AF]",
+    tag: "Podcast",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your video URL
+  },
+  {
+    title: "Brand Reels",
+    sub: "Short-form · Social Media",
+    cat: "Reels",
+    gradient: "from-[#F472B6] via-[#8B5CF6] to-[#3B82F6]",
+    tag: "Reels",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your video URL
+  },
+  {
+    title: "Motion ID Pack",
+    sub: "Logo Animation · Idents",
+    cat: "Motion Graphics",
+    gradient: "from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6]",
+    tag: "Branding",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your video URL
+  },
+  {
+    title: "Campaign Cuts",
+    sub: "Social Spots · Awareness",
+    cat: "Social Media",
+    gradient: "from-[#F59E0B] via-[#EF4444] to-[#8B5CF6]",
+    tag: "Campaign",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your video URL
+  },
 ];
+
+function getEmbedUrl(url: string): { type: "iframe" | "video"; src: string } | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+
+  // YouTube detection (handles standard, youtu.be, shorts, and embed links)
+  const ytMatch = trimmed.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([a-zA-Z0-9_-]{11})/
+  );
+  if (ytMatch && ytMatch[1]) {
+    return {
+      type: "iframe",
+      src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`,
+    };
+  }
+
+  // Vimeo detection
+  const vimeoMatch = trimmed.match(/vimeo\.com\/(?:video\/)?([0-9]+)/);
+  if (vimeoMatch && vimeoMatch[1]) {
+    return {
+      type: "iframe",
+      src: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`,
+    };
+  }
+
+  // Direct video file (mp4, webm, ogg, mov) or other video streams
+  return {
+    type: "video",
+    src: trimmed,
+  };
+}
 
 export function Portfolio() {
   const [active, setActive] = useState("All");
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const filtered = active === "All" ? projects : projects.filter((p) => p.cat === active);
 
   return (
@@ -68,14 +158,25 @@ export function Portfolio() {
               transition={{ duration: 0.5, delay: i * 0.05 }}
             >
               <TiltCard intensity={9} depth={8}>
-                <div className="group relative aspect-[4/5] rounded-3xl overflow-hidden glass cursor-pointer">
+                <div
+                  onClick={() => setSelectedProject(p)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedProject(p);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  className="group relative aspect-[4/5] rounded-3xl overflow-hidden glass cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/60"
+                >
                   <div className={`absolute inset-0 bg-gradient-to-br ${p.gradient} opacity-90`} />
                   <div className="absolute inset-0 bg-grid opacity-20 mix-blend-overlay" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute top-4 left-4 glass rounded-full px-3 py-1 text-[10px] uppercase tracking-widest">{p.tag}</div>
                   <div className="absolute inset-0 grid place-items-center">
-                    <div className="size-16 rounded-full glass grid place-items-center opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">
-                      <Play className="size-7 fill-white text-white" />
+                    <div className="size-16 rounded-full glass grid place-items-center opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all shadow-xl">
+                      <Play className="size-7 fill-white text-white ml-0.5" />
                     </div>
                   </div>
                   <div className="absolute bottom-0 inset-x-0 p-5">
@@ -89,6 +190,55 @@ export function Portfolio() {
           ))}
         </div>
       </div>
+
+      {/* Video Modal Player */}
+      <Dialog open={Boolean(selectedProject)} onOpenChange={(open) => !open && setSelectedProject(null)}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden border-border/40 bg-background/95 backdrop-blur-2xl sm:rounded-2xl shadow-2xl">
+          <DialogHeader className="p-6 pb-3">
+            <div className="text-xs uppercase tracking-widest text-primary font-semibold">
+              {selectedProject?.cat} • {selectedProject?.tag}
+            </div>
+            <DialogTitle className="text-2xl font-display font-bold text-foreground">
+              {selectedProject?.title}
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              {selectedProject?.sub}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="relative aspect-video w-full bg-black/90">
+            {selectedProject?.videoUrl ? (
+              (() => {
+                const embed = getEmbedUrl(selectedProject.videoUrl);
+                if (embed?.type === "iframe") {
+                  return (
+                    <iframe
+                      src={embed.src}
+                      title={selectedProject.title}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  );
+                }
+                return (
+                  <video
+                    src={embed?.src}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-contain"
+                  />
+                );
+              })()
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center p-8 text-center text-muted-foreground">
+                <Play className="mb-3 size-12 opacity-30" />
+                <p className="text-sm font-medium">Video preview coming soon!</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
