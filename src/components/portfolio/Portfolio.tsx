@@ -37,7 +37,7 @@ export const projects: Project[] = [
     cat: "Video Editing",
     gradient: "from-[#3B82F6] via-[#6366F1] to-[#8B5CF6]",
     tag: "Featured",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your YouTube, Vimeo, or MP4 URL
+    videoUrl: "https://drive.google.com/file/d/1drrrkuP1rR5CU1SrNkCzBJUgy9CRpFDf/view?usp=drive_link", // <-- Replace with your link
   },
   {
     title: "Cybersecurity Awareness",
@@ -45,7 +45,7 @@ export const projects: Project[] = [
     cat: "Explainer Videos",
     gradient: "from-[#8B5CF6] via-[#A855F7] to-[#EC4899]",
     tag: "Series",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your video URL
+    videoUrl: "https://drive.google.com/file/d/1RzZY4bHQNJRSpP7VQogq06Nsb_vwRgIr/view?usp=drive_link", // <-- Replace with your link
   },
   {
     title: "Digicrow Podcast",
@@ -53,7 +53,7 @@ export const projects: Project[] = [
     cat: "Podcasts",
     gradient: "from-[#0EA5E9] via-[#3B82F6] to-[#1E40AF]",
     tag: "Podcast",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your video URL
+    videoUrl: "https://www.youtube.com/watch?v=fs8qKtkJhxo&t=171s", // <-- Replace with your link
   },
   {
     title: "Brand Reels",
@@ -61,7 +61,7 @@ export const projects: Project[] = [
     cat: "Reels",
     gradient: "from-[#F472B6] via-[#8B5CF6] to-[#3B82F6]",
     tag: "Reels",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your video URL
+    videoUrl: "https://drive.google.com/file/d/1YG7tn3YGC5KoX2lmUBzpaPtHYFRZnvPo/view", // <-- Replace with your link
   },
   {
     title: "Motion ID Pack",
@@ -69,7 +69,7 @@ export const projects: Project[] = [
     cat: "Motion Graphics",
     gradient: "from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6]",
     tag: "Branding",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your video URL
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // <-- Replace with your link
   },
   {
     title: "Campaign Cuts",
@@ -77,7 +77,7 @@ export const projects: Project[] = [
     cat: "Social Media",
     gradient: "from-[#F59E0B] via-[#EF4444] to-[#8B5CF6]",
     tag: "Campaign",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with your video URL
+    videoUrl: "https://drive.google.com/file/d/1id8BbGG0qvymm2WdEoVzssiSgXHvKHXd/view", // <-- Replace with your link
   },
 ];
 
@@ -85,7 +85,7 @@ function getEmbedUrl(url: string): { type: "iframe" | "video"; src: string } | n
   if (!url) return null;
   const trimmed = url.trim();
 
-  // YouTube detection (handles standard, youtu.be, shorts, and embed links)
+  // YouTube detection
   const ytMatch = trimmed.match(
     /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([a-zA-Z0-9_-]{11})/
   );
@@ -105,7 +105,7 @@ function getEmbedUrl(url: string): { type: "iframe" | "video"; src: string } | n
     };
   }
 
-  // Direct video file (mp4, webm, ogg, mov) or other video streams
+  // Direct MP4 / WebM
   return {
     type: "video",
     src: trimmed,
