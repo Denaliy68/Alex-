@@ -69,7 +69,7 @@ export const projects: Project[] = [
     cat: "Motion Graphics",
     gradient: "from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6]",
     tag: "Branding",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    videoUrl: "https://drive.google.com/file/d/1zQl-hoRwk7DOaZdHmxiIiQFC8Vv7nlAs/view?usp=sharing",
   },
   {
     title: "Campaign Cuts",
