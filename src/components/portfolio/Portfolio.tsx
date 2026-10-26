@@ -18,6 +18,7 @@ export type Project = {
   gradient: string;
   tag: string;
   videoUrl?: string;
+  thumbnail?: string;
 };
 
 const categories = [
@@ -38,6 +39,7 @@ export const projects: Project[] = [
     gradient: "from-[#3B82F6] via-[#6366F1] to-[#8B5CF6]",
     tag: "Featured",
     videoUrl: "https://drive.google.com/file/d/1drrrkuP1rR5CU1SrNkCzBJUgy9CRpFDf/view?usp=drive_link",
+    thumbnail: "", // Paste image link or local path e.g. "/thumbnails/cyberpeace.jpg"
   },
   {
     title: "Cybersecurity Awareness",
@@ -46,6 +48,7 @@ export const projects: Project[] = [
     gradient: "from-[#8B5CF6] via-[#A855F7] to-[#EC4899]",
     tag: "Series",
     videoUrl: "https://drive.google.com/file/d/1RzZY4bHQNJRSpP7VQogq06Nsb_vwRgIr/view?usp=drive_link",
+    thumbnail: "",
   },
   {
     title: "Digicrow Podcast",
@@ -54,6 +57,7 @@ export const projects: Project[] = [
     gradient: "from-[#0EA5E9] via-[#3B82F6] to-[#1E40AF]",
     tag: "Podcast",
     videoUrl: "https://www.youtube.com/watch?v=fs8qKtkJhxo&t=171s",
+    thumbnail: "",
   },
   {
     title: "Brand Reels",
@@ -62,6 +66,7 @@ export const projects: Project[] = [
     gradient: "from-[#F472B6] via-[#8B5CF6] to-[#3B82F6]",
     tag: "Reels",
     videoUrl: "https://drive.google.com/file/d/1YG7tn3YGC5KoX2lmUBzpaPtHYFRZnvPo/view",
+    thumbnail: "",
   },
   {
     title: "Motion ID Pack",
@@ -70,6 +75,7 @@ export const projects: Project[] = [
     gradient: "from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6]",
     tag: "Branding",
     videoUrl: "https://drive.google.com/file/d/1zQl-hoRwk7DOaZdHmxiIiQFC8Vv7nlAs/view?usp=sharing",
+    thumbnail: "",
   },
   {
     title: "Campaign Cuts",
@@ -78,6 +84,7 @@ export const projects: Project[] = [
     gradient: "from-[#F59E0B] via-[#EF4444] to-[#8B5CF6]",
     tag: "Campaign",
     videoUrl: "https://drive.google.com/file/d/1id8BbGG0qvymm2WdEoVzssiSgXHvKHXd/view",
+    thumbnail: "",
   },
 ];
 
@@ -207,11 +214,20 @@ export function Portfolio() {
                   }}
                   role="button"
                   tabIndex={0}
-                  className="group relative aspect-[4/5] rounded-3xl overflow-hidden glass cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/60"
+                  className="group relative aspect-[4/5] rounded-3xl overflow-hidden glass cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/60 bg-black/40"
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${p.gradient} opacity-90`} />
-                  <div className="absolute inset-0 bg-grid opacity-20 mix-blend-overlay" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  {p.thumbnail ? (
+                    <img
+                      src={p.thumbnail}
+                      alt={p.title}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className={`absolute inset-0 bg-gradient-to-br ${p.gradient} opacity-90 transition-transform duration-700 ease-out group-hover:scale-105`} />
+                  )}
+                  <div className="absolute inset-0 bg-grid opacity-20 mix-blend-overlay pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10 group-hover:via-black/20 transition-colors pointer-events-none" />
                   <div className="absolute top-4 left-4 glass rounded-full px-3 py-1 text-[10px] uppercase tracking-widest">{p.tag}</div>
                   <div className="absolute inset-0 grid place-items-center">
                     <div className="size-16 rounded-full glass grid place-items-center opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all shadow-xl">
