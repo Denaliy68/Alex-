@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Play } from "lucide-react";
+import { Play, ExternalLink } from "lucide-react";
 import { SectionHeader } from "./Section";
 import { TiltCard } from "./TiltCard";
 import {
@@ -37,7 +37,7 @@ export const projects: Project[] = [
     cat: "Video Editing",
     gradient: "from-[#3B82F6] via-[#6366F1] to-[#8B5CF6]",
     tag: "Featured",
-    videoUrl: "https://drive.google.com/file/d/1drrrkuP1rR5CU1SrNkCzBJUgy9CRpFDf/view?usp=drive_link", // <-- Replace with your link
+    videoUrl: "https://drive.google.com/file/d/1drrrkuP1rR5CU1SrNkCzBJUgy9CRpFDf/view?usp=drive_link",
   },
   {
     title: "Cybersecurity Awareness",
@@ -45,7 +45,7 @@ export const projects: Project[] = [
     cat: "Explainer Videos",
     gradient: "from-[#8B5CF6] via-[#A855F7] to-[#EC4899]",
     tag: "Series",
-    videoUrl: "https://drive.google.com/file/d/1RzZY4bHQNJRSpP7VQogq06Nsb_vwRgIr/view?usp=drive_link", // <-- Replace with your link
+    videoUrl: "https://drive.google.com/file/d/1RzZY4bHQNJRSpP7VQogq06Nsb_vwRgIr/view?usp=drive_link",
   },
   {
     title: "Digicrow Podcast",
@@ -53,7 +53,7 @@ export const projects: Project[] = [
     cat: "Podcasts",
     gradient: "from-[#0EA5E9] via-[#3B82F6] to-[#1E40AF]",
     tag: "Podcast",
-    videoUrl: "https://www.youtube.com/watch?v=fs8qKtkJhxo&t=171s", // <-- Replace with your link
+    videoUrl: "https://www.youtube.com/watch?v=fs8qKtkJhxo&t=171s",
   },
   {
     title: "Brand Reels",
@@ -61,7 +61,7 @@ export const projects: Project[] = [
     cat: "Reels",
     gradient: "from-[#F472B6] via-[#8B5CF6] to-[#3B82F6]",
     tag: "Reels",
-    videoUrl: "https://drive.google.com/file/d/1YG7tn3YGC5KoX2lmUBzpaPtHYFRZnvPo/view", // <-- Replace with your link
+    videoUrl: "https://drive.google.com/file/d/1YG7tn3YGC5KoX2lmUBzpaPtHYFRZnvPo/view",
   },
   {
     title: "Motion ID Pack",
@@ -69,7 +69,7 @@ export const projects: Project[] = [
     cat: "Motion Graphics",
     gradient: "from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6]",
     tag: "Branding",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // <-- Replace with your link
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     title: "Campaign Cuts",
@@ -77,7 +77,7 @@ export const projects: Project[] = [
     cat: "Social Media",
     gradient: "from-[#F59E0B] via-[#EF4444] to-[#8B5CF6]",
     tag: "Campaign",
-    videoUrl: "https://drive.google.com/file/d/1id8BbGG0qvymm2WdEoVzssiSgXHvKHXd/view", // <-- Replace with your link
+    videoUrl: "https://drive.google.com/file/d/1id8BbGG0qvymm2WdEoVzssiSgXHvKHXd/view",
   },
 ];
 
@@ -85,19 +85,58 @@ function getEmbedUrl(url: string): { type: "iframe" | "video"; src: string } | n
   if (!url) return null;
   const trimmed = url.trim();
 
-  // YouTube detection
-  const ytMatch = trimmed.match(
-    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([a-zA-Z0-9_-]{11})/
-  );
-  if (ytMatch && ytMatch[1]) {
+  // 1. Google Drive Links (e.g. https://drive.google.com/file/d/ID/view)
+  const gdriveMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/i);
+  if (gdriveMatch && gdriveMatch[1]) {
     return {
       type: "iframe",
-      src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`,
+      src: `https://drive.google.com/file/d/${gdriveMatch[1]}/preview`,
     };
   }
 
-  // Vimeo detection
-  const vimeoMatch = trimmed.match(/vimeo\.com\/(?:video\/)?([0-9]+)/);
+  // 2. YouTube Links (handles watch?v=, watch?si=...&v=, shorts/, embed/, youtu.be/)
+  try {
+    const parsed = new URL(trimmed);
+    const host = parsed.hostname.toLowerCase();
+    if (host.includes("youtube.com")) {
+      const v = parsed.searchParams.get("v");
+      if (v) {
+        return {
+          type: "iframe",
+          src: `https://www.youtube.com/embed/${v}?autoplay=1&rel=0`,
+        };
+      }
+      const shortsMatch = parsed.pathname.match(/\/shorts\/([a-zA-Z0-9_-]{11})/);
+      if (shortsMatch && shortsMatch[1]) {
+        return {
+          type: "iframe",
+          src: `https://www.youtube.com/embed/${shortsMatch[1]}?autoplay=1&rel=0`,
+        };
+      }
+    }
+    if (host.includes("youtu.be")) {
+      const id = parsed.pathname.replace(/^\/+/, "").split("/")[0]?.split("?")[0];
+      if (id && id.length === 11) {
+        return {
+          type: "iframe",
+          src: `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`,
+        };
+      }
+    }
+  } catch {
+    // fallback to regex if URL parsing fails
+  }
+
+  const ytFallback = trimmed.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/i);
+  if (ytFallback && ytFallback[1]) {
+    return {
+      type: "iframe",
+      src: `https://www.youtube.com/embed/${ytFallback[1]}?autoplay=1&rel=0`,
+    };
+  }
+
+  // 3. Vimeo
+  const vimeoMatch = trimmed.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
   if (vimeoMatch && vimeoMatch[1]) {
     return {
       type: "iframe",
@@ -105,7 +144,7 @@ function getEmbedUrl(url: string): { type: "iframe" | "video"; src: string } | n
     };
   }
 
-  // Direct MP4 / WebM
+  // 4. Direct video file (mp4, webm, etc.)
   return {
     type: "video",
     src: trimmed,
@@ -195,8 +234,21 @@ export function Portfolio() {
       <Dialog open={Boolean(selectedProject)} onOpenChange={(open) => !open && setSelectedProject(null)}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden border-border/40 bg-background/95 backdrop-blur-2xl sm:rounded-2xl shadow-2xl">
           <DialogHeader className="p-6 pb-3">
-            <div className="text-xs uppercase tracking-widest text-primary font-semibold">
-              {selectedProject?.cat} • {selectedProject?.tag}
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-xs uppercase tracking-widest text-primary font-semibold">
+                {selectedProject?.cat} • {selectedProject?.tag}
+              </div>
+              {selectedProject?.videoUrl && (
+                <a
+                  href={selectedProject.videoUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors pr-6"
+                >
+                  <span>Open Link</span>
+                  <ExternalLink className="size-3.5" />
+                </a>
+              )}
             </div>
             <DialogTitle className="text-2xl font-display font-bold text-foreground">
               {selectedProject?.title}
@@ -206,7 +258,7 @@ export function Portfolio() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="relative aspect-video w-full bg-black/90">
+          <div className="relative aspect-video w-full bg-black/95">
             {selectedProject?.videoUrl ? (
               (() => {
                 const embed = getEmbedUrl(selectedProject.videoUrl);
@@ -226,6 +278,7 @@ export function Portfolio() {
                     src={embed?.src}
                     controls
                     autoPlay
+                    playsInline
                     className="w-full h-full object-contain"
                   />
                 );
